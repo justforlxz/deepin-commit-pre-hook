@@ -1,0 +1,52 @@
+#!/bin/python
+
+import inquirer
+import sys
+from string import Template
+
+def addList(name, message, list):
+  return inquirer.List(name, message, list)
+
+def addText(name, message, valid):
+  return inquirer.Text(name, message, valid)
+
+def addCheck(_name, _message, _choices):
+  return inquirer.Checkbox(_name, message=_message, choices=_choices)
+
+questions = [
+  addCheck("action", "选择非选项", ['Bug', 'Issue', 'Task'])
+]
+
+answers = inquirer.prompt(questions)
+
+questions = [
+  addList('action', "select you action", ['fix', 'feat', 'refactor']),
+  addText('title', "input title", ""),
+  addText('description', "input description", ""),
+  addText("log", "input log", ""),
+]
+
+optinal = {
+  "Bug": addText("bug", "input bug id", ""),
+  "Issue": addText("issue", "input issue id", ""),
+  "Task": addText("task", "input task id", ""),
+}
+
+optinalMap = {
+  "Bug": "bug",
+  "Issue": "issue",
+  "Task": "task",
+}
+
+template='${action}: ${title}\n\nDescription: ${description}\n\nLog: ${log}\n'
+
+for action in answers["action"]:
+  questions.append(optinal[action])
+  template += action + ": ${" + optinalMap[action] + "}\n"
+
+answers = inquirer.prompt(questions)
+# print(Template(template).substitute(answers))
+COMMIT_MSG_FILE=sys.argv[1]
+
+file = open(COMMIT_MSG_FILE, "r+")
+file.write(Template(template).substitute(answers))
